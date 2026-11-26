@@ -1,0 +1,385 @@
+import java.util.*;
+import java.io.*;
+
+// Parent class: Email
+// Serializable is used for file handling
+abstract class Email implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    private int id;
+    private String sender;
+    private String subject;
+    private String message;
+    private boolean isRead;
+
+    // Constructor
+    public Email(int id, String sender, String subject, String message) {
+        this.id = id;
+        this.sender = sender;
+        this.subject = subject;
+        this.message = message;
+        this.isRead = false;
+    }
+
+    // Encapsulation: Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public boolean getIsRead() {
+        return isRead;
+    }
+
+    public void setIsRead(boolean isRead) {
+        this.isRead = isRead;
+    }
+
+    // Abstract method for Polymorphism
+    public abstract void displayDetails();
+}
+
+// Child class 1: Personal Email
+class PersonalEmail extends Email {
+
+    private static final long serialVersionUID = 1L;
+
+    public PersonalEmail(int id, String sender,
+                         String subject, String message) {
+        super(id, sender, subject, message);
+    }
+
+    // Method Overriding
+    @Override
+    public void displayDetails() {
+        System.out.println("\nEmail Type : Personal");
+        System.out.println("ID         : " + getId());
+        System.out.println("Sender     : " + getSender());
+        System.out.println("Subject    : " + getSubject());
+        System.out.println("Message    : " + getMessage());
+        System.out.println("Status     : " +
+                (getIsRead() ? "Read" : "Unread"));
+    }
+}
+
+// Child class 2: Work Email
+class WorkEmail extends Email {
+
+    private static final long serialVersionUID = 1L;
+
+    public WorkEmail(int id, String sender,
+                     String subject, String message) {
+        super(id, sender, subject, message);
+    }
+
+    // Method Overriding
+    @Override
+    public void displayDetails() {
+        System.out.println("\nEmail Type : Work");
+        System.out.println("ID         : " + getId());
+        System.out.println("Sender     : " + getSender());
+        System.out.println("Subject    : " + getSubject());
+        System.out.println("Message    : " + getMessage());
+        System.out.println("Status     : " +
+                (getIsRead() ? "Read" : "Unread"));
+    }
+}
+
+// Main class
+public class EmailInboxManager {
+
+    // ArrayList stores emails dynamically
+    private static ArrayList<Email> inbox = new ArrayList<>();
+
+    private static int nextId = 1;
+
+    private static final String FILE_NAME = "emails.dat";
+
+    // Scanner object for user input
+    private static Scanner sc = new Scanner(System.in);
+
+    // Method 1: Add Email
+    public static void addEmail() {
+
+        try {
+            System.out.println("\n1. Personal Email");
+            System.out.println("2. Work Email");
+
+            System.out.print("Choose Email Type: ");
+            int type = Integer.parseInt(sc.nextLine());
+
+            if (type != 1 && type != 2) {
+                System.out.println("Invalid email type!");
+                return;
+            }
+
+            System.out.print("Enter Sender: ");
+            String sender = sc.nextLine();
+
+            System.out.print("Enter Subject: ");
+            String subject = sc.nextLine();
+
+            System.out.print("Enter Message: ");
+            String message = sc.nextLine();
+
+            Email email;
+
+            // Inheritance and Polymorphism
+            if (type == 1) {
+                email = new PersonalEmail(
+                        nextId++, sender, subject, message);
+            } else {
+                email = new WorkEmail(
+                        nextId++, sender, subject, message);
+            }
+
+            inbox.add(email);
+
+            System.out.println("Email added successfully!");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Please enter a valid number!");
+        }
+    }
+
+    // Method 2: Display All Emails
+    public static void displayEmails() {
+
+        if (inbox.isEmpty()) {
+            System.out.println("Inbox is empty!");
+            return;
+        }
+
+        System.out.println("\n===== EMAIL INBOX =====");
+
+        // Traversal of ArrayList
+        for (Email email : inbox) {
+            email.displayDetails();
+            System.out.println("----------------------");
+        }
+    }
+
+    // Method 3: Search Email using Linear Search
+    public static void searchEmail() {
+
+        try {
+            System.out.print("Enter Email ID: ");
+            int id = Integer.parseInt(sc.nextLine());
+
+            // Linear Search
+            for (Email email : inbox) {
+
+                if (email.getId() == id) {
+                    System.out.println("Email Found!");
+                    email.displayDetails();
+                    return;
+                }
+            }
+
+            System.out.println("Email not found!");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid ID!");
+        }
+    }
+
+    // Method 4: Delete Email
+    public static void deleteEmail() {
+
+        try {
+            System.out.print("Enter Email ID to Delete: ");
+            int id = Integer.parseInt(sc.nextLine());
+
+            // Iterator for safe deletion
+            Iterator<Email> iterator = inbox.iterator();
+
+            while (iterator.hasNext()) {
+
+                Email email = iterator.next();
+
+                if (email.getId() == id) {
+                    iterator.remove();
+                    System.out.println("Email deleted successfully!");
+                    return;
+                }
+            }
+
+            System.out.println("Email not found!");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid ID!");
+        }
+    }
+
+    // Method 5: Mark Email as Read
+    public static void markAsRead() {
+
+        try {
+            System.out.print("Enter Email ID: ");
+            int id = Integer.parseInt(sc.nextLine());
+
+            for (Email email : inbox) {
+
+                if (email.getId() == id) {
+                    email.setIsRead(true);
+                    System.out.println("Email marked as Read!");
+                    return;
+                }
+            }
+
+            System.out.println("Email not found!");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid ID!");
+        }
+    }
+
+    // Method 6: Sort Emails by Sender
+    public static void sortEmails() {
+
+        // Java Collections Framework
+        Collections.sort(inbox,
+                Comparator.comparing(
+                        Email::getSender,
+                        String.CASE_INSENSITIVE_ORDER));
+
+        System.out.println("Emails sorted by sender!");
+        displayEmails();
+    }
+
+    // Method 7: Save Emails into File
+    public static void saveEmails() {
+
+        try (ObjectOutputStream out =
+                     new ObjectOutputStream(
+                             new FileOutputStream(FILE_NAME))) {
+
+            out.writeObject(inbox);
+
+            System.out.println("Emails saved successfully!");
+
+        } catch (IOException e) {
+            System.out.println("Error saving emails: " + e.getMessage());
+        }
+    }
+
+    // Method 8: Load Emails from File
+    @SuppressWarnings("unchecked")
+    public static void loadEmails() {
+
+        File file = new File(FILE_NAME);
+
+        if (!file.exists()) {
+            System.out.println("No saved email file found.");
+            return;
+        }
+
+        try (ObjectInputStream in =
+                     new ObjectInputStream(
+                             new FileInputStream(FILE_NAME))) {
+
+            inbox = (ArrayList<Email>) in.readObject();
+
+            // Generate unique IDs for new emails
+            nextId = 1;
+
+            for (Email email : inbox) {
+                if (email.getId() >= nextId) {
+                    nextId = email.getId() + 1;
+                }
+            }
+
+            System.out.println("Emails loaded successfully!");
+
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading emails: " + e.getMessage());
+        }
+    }
+
+    // Main Method
+    public static void main(String[] args) {
+
+        // Load previously saved emails
+        loadEmails();
+
+        int choice = 0;
+
+        do {
+            System.out.println("\n================================");
+            System.out.println("       EMAIL INBOX MANAGER");
+            System.out.println("================================");
+
+            System.out.println("1. Add New Email");
+            System.out.println("2. Display All Emails");
+            System.out.println("3. Search Email");
+            System.out.println("4. Delete Email");
+            System.out.println("5. Mark Email as Read");
+            System.out.println("6. Sort Emails by Sender");
+            System.out.println("7. Save Emails");
+            System.out.println("8. Exit");
+
+            System.out.print("\nEnter Your Choice: ");
+
+            try {
+                choice = Integer.parseInt(sc.nextLine());
+
+                switch (choice) {
+
+                    case 1:
+                        addEmail();
+                        break;
+
+                    case 2:
+                        displayEmails();
+                        break;
+
+                    case 3:
+                        searchEmail();
+                        break;
+
+                    case 4:
+                        deleteEmail();
+                        break;
+
+                    case 5:
+                        markAsRead();
+                        break;
+
+                    case 6:
+                        sortEmails();
+                        break;
+
+                    case 7:
+                        saveEmails();
+                        break;
+
+                    case 8:
+                        saveEmails();
+                        System.out.println("Thank you for using Email Inbox Manager!");
+                        break;
+
+                    default:
+                        System.out.println("Invalid choice!");
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid menu number!");
+            }
+
+        } while (choice != 8);
+
+        sc.close();
+    }
+}
